@@ -1,0 +1,15 @@
+{
+    "name": "derweili/block-patterns-manager",
+    "authors": [
+        {
+            "name": "derweili",
+            "email": "jw@derweili.de"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+          "Derweili\\BlockPatternsManager\\": "inc/"
+        }
+    }
+}
