@@ -3,11 +3,17 @@
 namespace Derweili\BlockPatternsManager;
 
 class AdminPage {
-	private $menu_slug = 'block-patterns-manager';
+	private static $menu_slug = 'block-patterns-manager';
 
 	private $nonce_key = 'block-patterns-manager-nonce';
+	private $nonce_action = 'save-block-patterns-manager-nonce';
 
 	private static $instance = null;
+
+	/**
+	 * BlockPatternsManager
+	 */
+	private $block_patterns_manager = null;
 
 	/**
 	 * Registered patterns array.
@@ -17,75 +23,74 @@ class AdminPage {
 	 */
 	public $patterns = array();
 
-
 	/**
-	 * Utility method to retrieve the main instance of the class.
-	 *
-	 * The instance will be created if it does not exist yet.
-	 *
+	 * Construct Method
+	 * 
 	 * @since 1.0.0
-	 *
-	 * @return WP_Block_Patterns_Registry The main instance.
+	 * @param $block_patterns_manager BlockPatternsManager
+	 * @return void
+	 * 
 	 */
-	public static function get_instance() {
-		if ( null === self::$instance ) {
-			self::$instance = new self();
+	public function __construct( $block_patterns_manager ) {
+		/**
+		 * check if block_patterns_manager ist instance of BlockPatternsManager
+		 */
+		if ( ! $block_patterns_manager instanceof BlockPatternsManager ) {
+			throw new \Exception( '$block_patterns_manager must be instance of BlockPatternsManager' );
 		}
 
-		return self::$instance;
+		$this->block_patterns_manager = $block_patterns_manager;
 	}
 
-	public function get_menu_slug() {
-		return $this->menu_slug;
+	public static function get_menu_slug() {
+		return self::$menu_slug;
 	}
 
 	public function register() {
 		add_action( 'admin_menu', array($this, 'add_menu_page') );
 		add_filter( 'set-screen-option', [ __CLASS__, 'set_screen' ], 10, 3 );
-
 	}
 
 	public static function set_screen( $status, $option, $value ) {
 		return $value;
 	}
 
+	/**
+	 * Register the menu page.
+	 */
 	public function add_menu_page() {
-		// add_menu_page( __('Block Patterns Manager', 'block-patterns-manager'), __('Block Patterns Manager', 'block-patterns-manager'), 'manage_options', array( $this, 'options_page' ) , 'dashicons-align-wide' );
-		// add_menu_page( __('Block Patterns Manager', 'block-patterns-manager'), __('Block Patterns Manager', 'block-patterns-manager'), 'manage_options', $this->get_menu_slug(), array( $this, 'options_page' ), 'dashicons-align-wide', null );
 		$hook = add_management_page(
 			__('Block Patterns Manager', 'block-patterns-manager'),
 			__('Block Patterns Manager', 'block-patterns-manager'),
 			'manage_options',
-			$this->get_menu_slug(),
+			self::get_menu_slug(),
 			array( $this, 'options_page' ),
 			'dashicons-align-wide',
 			null
 		);
 
 		add_action( "load-$hook", [ $this, 'screen_option' ] );
-
 	}
 
 	/**
-	* Screen options
-	*/
+	 * Screen options
+	 */
 	public function screen_option() {
 
 		$option = 'per_page';
-		// $args = [
-		// 'label' => 'Block Patterns',
-		// 'default' => 5,
-		// 'option' => 'customers_per_page'
-		// ];
 		
-		// add_screen_option( $option, $args );
-		
-		$this->block_patterns_list_table = new BlockPatternsListTable();
+		$this->block_patterns_list_table = new BlockPatternsListTable( $this->block_patterns_manager );
 		$this->save_settings();
 	}
 	
+	/**
+	 * Render the options page
+	 * 
+	 * Todo: Write tests
+	 */
 	public function options_page() {
-		$settings = BlockPatternsManager::get_instance()->get_settings();
+		$settings = $this->block_patterns_manager->get_settings();
+
 		?>
 			<div class="wrap">
 				<h2><?php _e('Block Patterns Manager', 'block-patterns-manager'); ?></h2>
@@ -100,7 +105,7 @@ class AdminPage {
 										$this->block_patterns_list_table->display();
 									?>
 									<button class="button-primary" type="submit"><?php _e('Save Settings', 'block-patterns-manager'); ?></button>
-									<?php wp_nonce_field( $this->$nonce_key ); ?>
+									<?php wp_nonce_field( $this->nonce_action ); ?>
 								</form>
 							</div>
 						</div>
@@ -141,22 +146,28 @@ class AdminPage {
 		<?php
 	}
 
+	/**
+	 * Save admin page settings
+	 */
 	public function save_settings() {
-		if ( isset( $_POST['_wpnonce'] ) || wp_verify_nonce( $_POST['_wpnonce'], 'block_patterns_manager_nonce' ) ) {
+		if ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], $this->nonce_action ) ) {
 
 			$block_patterns_capabilities = [];
 
 			// sanitize input
 			foreach ($_POST['capabilities'] as $key => $value) {
-			 $block_patterns_capabilities[ sanitize_text_field( $key ) ] = sanitize_text_field( $value );
+				$block_patterns_capabilities[ sanitize_text_field( $key ) ] = sanitize_text_field( $value );
 			}
-			BlockPatternsManager::get_instance()->save_settings( $block_patterns_capabilities );
+
+			$this->block_patterns_manager->save_settings( $block_patterns_capabilities );
 
 			add_action( 'admin_notices', [$this, 'save_settings_notice'] );
-
 		}
 	}
 
+	/**
+	 * Render the admin notice
+	 */
 	public function save_settings_notice() {
 		?>
     <div class="notice notice-success is-dismissible">

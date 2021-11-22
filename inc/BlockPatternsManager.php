@@ -17,31 +17,13 @@ class BlockPatternsManager {
 	 * @since 1.0.0
 	 * @var array
 	 */
-	public $patterns = array();
+	public static $patterns = array();
 
 	private static $instance = null;
 
 	private $capabilities_settings_key = 'block_patterns_capabilities';
 
 	private $capabilities_settings = null;
-
-	/**
-	 * Utility method to retrieve the main instance of the class.
-	 *
-	 * The instance will be created if it does not exist yet.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return WP_Block_Patterns_Registry The main instance.
-	 */
-	public static function get_instance() {
-		if ( null === self::$instance ) {
-			self::$instance = new self();
-			return self::$instance;
-		}
-
-		return self::$instance;
-	}
 
 	/**
 	 * Load the settings from the database on the first run.
@@ -59,7 +41,7 @@ class BlockPatternsManager {
 	 * Load the unregistered patterns method which disables block patterns if the user is not allowed to use them.
 	 */
 	public function register() {
-		add_action('admin_init', array($this, 'load_all_patterns'), 50);
+		add_action( 'admin_init', array($this, 'load_all_patterns'), 50);
 		add_filter( 'admin_init', [ $this, 'register_settings' ] );
 		add_filter( 'admin_init', [ $this, 'unregister_block_patterns' ], 500 );
 
@@ -67,9 +49,11 @@ class BlockPatternsManager {
 
 	/**
 	 * Load all currently registered patterns and add them to the registry.
+	 * 
+	 * Todo: Create Tests
 	 */
 	public function load_all_patterns() {
-		$this->patterns = WP_Block_Patterns_Registry::get_instance()->get_all_registered();	
+		self::$patterns = WP_Block_Patterns_Registry::get_instance()->get_all_registered();	
 	}
 
 	/**
@@ -79,7 +63,7 @@ class BlockPatternsManager {
 	 * This filter is used by the RemovePattern class to add the block pattern directory to the list of patterns.
 	 */
 	public function get_all_patterns() {
-		return apply_filters( 'block_pattern_manager_all_patterns', $this->patterns );
+		return apply_filters( 'block_pattern_manager_all_patterns', self::$patterns );
 	}
 
 	/**
@@ -101,8 +85,7 @@ class BlockPatternsManager {
 	 * Get the settings from the database.
 	 */
 	private function load_settings() {
-		$settings = get_option( $this->capabilities_settings_key, [] );
-		return $settings;
+		return get_option( $this->capabilities_settings_key, [] );
 	}
 
 	/**
@@ -121,16 +104,35 @@ class BlockPatternsManager {
 	 */
 	public function unregister_block_patterns() {
 		foreach ($this->get_settings() as $pattern_name => $capability) {
-
 			// only unregister if the pattern is registered
-			if( WP_Block_Patterns_Registry::get_instance()->is_registered( $pattern_name ) ) {
+			if( $this->is_pattern_registered( $pattern_name ) ) {
 
 				// unregister if a capability is selected (not empty) and user has not the capability
-				if( ! empty($capability) && ! current_user_can( $capability ) ) {
-					$unregister_result = unregister_block_pattern( $pattern_name );
-					if( false === $unregister_result ) { var_dump( 'error_unregistering_pattern: ' . $pattern_name ); }
+				if( ! empty( $capability ) && ! $this->current_user_can( $capability ) ) {
+					$unregister_result = $this->unregister_block_pattern( $pattern_name );
 				}
 			}
 		}
+	}
+
+	/**
+	 * Wrapper function for current_user_can() WordPress Capabilities Check
+	 */
+	public function current_user_can( $capability ) {
+		return current_user_can( $capability );
+	}
+
+	/**
+	 * Wrapper function for unregister_block_pattern WordPress function
+	 */
+	public function unregister_block_pattern( $pattern_name ) {
+		return unregister_block_pattern( $pattern_name );
+	}
+
+	/**
+	 * Check if a pattern is registered
+	 */
+	public function is_pattern_registered( $pattern_name ) {
+		return WP_Block_Patterns_Registry::get_instance()->is_registered( $pattern_name );
 	}
 }

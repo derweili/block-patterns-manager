@@ -10,8 +10,24 @@ use \WP_List_Table;
  * Extends the WP_List_Table class
  */
 class BlockPatternsListTable extends WP_List_Table {
+
+
+	/**
+	 * BlockPatternsManager
+	 */
+	private $block_patterns_manager = null;
+
+
 	/** Class constructor */
-	public function __construct() {
+	public function __construct( $block_patterns_manager ) {
+		/**
+		 * check if block_patterns_manager ist instance of BlockPatternsManager
+		 */
+		if ( ! $block_patterns_manager instanceof BlockPatternsManager ) {
+			throw new \Exception( '$block_patterns_manager must be instance of BlockPatternsManager' );
+		}
+
+		$this->block_patterns_manager = $block_patterns_manager;
 
 		parent::__construct( [
 			'singular' => __( 'Block Pattern', 'block-patterns-manager' ), //singular name of the listed records
@@ -175,7 +191,7 @@ class BlockPatternsListTable extends WP_List_Table {
 	 */
 	public function capabilities_dropdown( $item ) {
 		ob_start();
-		$capability_settings = BlockPatternsManager::get_instance()->get_settings();
+		$capability_settings = $this->block_patterns_manager->get_settings();
 		?>
 			<div class="block-pattern-capability">
 				<select name="capabilities[<?= $item['name']; ?>]-select" id="" class="capabilities-select">
@@ -229,7 +245,7 @@ class BlockPatternsListTable extends WP_List_Table {
 	*/
 	public function prepare_items() {
 
-		$block_patterns = BlockPatternsManager::get_instance()->get_all_patterns();
+		$block_patterns = $this->block_patterns_manager->get_all_patterns();
 
 		$this->_column_headers = $this->get_column_info();
 		

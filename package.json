@@ -1,0 +1,26 @@
+{
+  "name": "block-patterns-manager",
+  "version": "1.0.0",
+  "description": "Manage who can use a block pattern. Select a require capability for each block pattern. Disable individual block patterns completely.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "./vendor/bin/phpunit --testdox tests",
+    "wp-env": "wp-env"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/derweili/block-patterns-manager.git"
+  },
+  "author": "derweili",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/derweili/block-patterns-manager/issues"
+  },
+  "homepage": "https://github.com/derweili/block-patterns-manager#readme",
+  "devDependencies": {
+    "@wordpress/env": "^4.1.1"
+  }
+}

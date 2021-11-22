@@ -16,32 +16,24 @@ class RemotePatterns {
 
 	private static $instance = null;
 
-	private $disable_remote_patterns = null;
+	private $disable_remote_patterns_capability = null;
 
 	private $remote_patterns_key = 'block_pattern_directory';
 
 	/**
-	 * Utility method to retrieve the main instance of the class.
-	 *
-	 * The instance will be created if it does not exist yet.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return WP_Block_Patterns_Registry The main instance.
+	 * BlockPatternsManager
 	 */
-	public static function get_instance() {
-		if ( null === self::$instance ) {
-			self::$instance = new self();
-			return self::$instance;
+	private $block_patterns_manager = null;
+
+	public function __construct( $block_patterns_manager ) {
+		/**
+		 * check if block_patterns_manager ist instance of BlockPatternsManager
+		 */
+		if ( ! $block_patterns_manager instanceof BlockPatternsManager ) {
+			throw new \Exception( '$block_patterns_manager must be instance of BlockPatternsManager' );
 		}
 
-		return self::$instance;
-	}
-
-	public function __construct() {
-		// load setttings;
-
-		$this->disable_remote_patterns = $this->load_disable_remote_patterns_capability_setting();
+		$this->block_patterns_manager = $block_patterns_manager;
 	}
 
 	/**
@@ -51,7 +43,9 @@ class RemotePatterns {
 		// add the filter to the block pattern directory
 		add_filter('should_load_remote_block_patterns', [ $this, 'disable_remote_block_patterns' ]);
 
-		// add the block pattern directory as a pattern
+		/**
+		 * add the block pattern directory as a pattern to BlockPatternsManager patterns list
+		 */
 		add_filter('block_pattern_manager_all_patterns', [ $this, 'add_pattern_directory_to_pattern_list' ]);
 	}
 
@@ -74,7 +68,7 @@ class RemotePatterns {
 	 * Load the current settings for the disable remote patterns capability
 	 */
 	public function load_disable_remote_patterns_capability_setting () {
-		$block_patterns_capabilities = BlockPatternsManager::get_instance()->get_settings();
+		$block_patterns_capabilities =  $this->block_patterns_manager->get_settings();
 
 		if( isset( $block_patterns_capabilities[$this->remote_patterns_key] ) && ! empty( $block_patterns_capabilities[ $this->remote_patterns_key ] ) ) {
 			return $block_patterns_capabilities[$this->remote_patterns_key];
@@ -85,23 +79,27 @@ class RemotePatterns {
 
 	/**
 	 * Get the current disable remote patterns capability
-	 * If no capability is set, load it from the settings
+	 * If no capability is stored yet, load it from the BlockPatternsManager settings
 	 */
 	public function get_setting() {
-		if( null === $this->disable_remote_patterns ) {
-			$this->disable_remote_patterns = $this->load_disable_remote_patterns_capability_setting();
+		if( null === $this->disable_remote_patterns_capability ) {
+			$this->disable_remote_patterns_capability = $this->load_disable_remote_patterns_capability_setting();
 		}
-		return $this->disable_remote_patterns;
+		return $this->disable_remote_patterns_capability;
 	}
 
 	/**
 	 * Disable remote block pattern based on settings
 	 */
 	public function disable_remote_block_patterns( $should_load_remote_block_patterns ) {
-		if( $this->get_setting() && ! current_user_can( $this->get_setting() ) ) {
+		if( $this->get_setting() && ! $this->current_user_can( $this->get_setting() ) ) {
 			return false;
 		}
 		
 		return $should_load_remote_block_patterns;
+	}
+
+	public function current_user_can( $capability ) {
+		return current_user_can( $capability );
 	}
 }

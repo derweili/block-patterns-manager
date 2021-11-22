@@ -6,10 +6,16 @@
             "email": "jw@derweili.de"
         }
     ],
-    "require": {},
+    "require": {
+    },
     "autoload": {
         "psr-4": {
           "Derweili\\BlockPatternsManager\\": "inc/"
         }
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.4",
+        "phpunit/phpunit": "^9",
+        "brain/monkey": "^2.6"
     }
 }
