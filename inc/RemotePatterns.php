@@ -51,16 +51,18 @@ class RemotePatterns {
 
 	/**
 	 * Add the block pattern directory as a "fake" pattern to the all patterns list
+	 * This function is added to the block_pattern_manager_all_patterns filter
 	 */
 	public function add_pattern_directory_to_pattern_list( $block_patterns ) {
 		/**
-		 * Add additional items
+		 * Add block_pattern_directory to the $block_patterns array
 		 */
 		$block_patterns[] = [
 			'name' => 'block_pattern_directory',
 			'title' => 'Block Pattern Directory',
 			'description' => 'Load external block patterns from the <a href="https://wordpress.org/patterns/" target="_blank" >Block Pattern Directory</a>'
 		];
+
 		return $block_patterns;
 	}
 
@@ -99,6 +101,9 @@ class RemotePatterns {
 		return $should_load_remote_block_patterns;
 	}
 
+	/**
+	 * Wrapper function for current_user_can to make it testable/mockable
+	 */
 	public function current_user_can( $capability ) {
 		return current_user_can( $capability );
 	}
