@@ -14,6 +14,9 @@ final class RemotePatternsTest extends PluginDefaultTestCase
 		parent::tearDown();
 	}
 
+	/**
+	 * Return an empty BlockPatternManager mock class
+	 */
 	public function getDefaultBlockPatternsManagerMock() {
 		$mock = Mockery::mock(BlockPatternsManager::class);
 		return $mock;
@@ -32,6 +35,9 @@ final class RemotePatternsTest extends PluginDefaultTestCase
 		self::assertNotFalse( has_filter('block_pattern_manager_all_patterns', [ $block_patterns_manager_instance, 'add_pattern_directory_to_pattern_list' ] ) );
 	}
 
+	/**
+	 * 
+	 */
 	public function testShouldAddPatternDirectoryToPatternList() {
 		/**
 		 * check if it is instance of AdminPage class
@@ -43,9 +49,32 @@ final class RemotePatternsTest extends PluginDefaultTestCase
 		$this->assertIsArray( $block_patterns );
 		$this->assertEquals( count( $block_patterns ) , 1 );
 		$this->assertEquals( $block_patterns[0]['name'], 'block_pattern_directory' );
-
 	}
 
+	/**
+	 * Test if add_pattern_directory_to_pattern_list() actually adds
+	 * the pattern to the pattern-array and preserve existing patterns
+	 */
+	public function testShouldAddPatternDirectoryToExistingPatternList() {
+		/**
+		 * check if it is instance of AdminPage class
+		 */
+		$remote_patterns = new RemotePatterns( $this->getDefaultBlockPatternsManagerMock() );
+
+		$block_patterns = $remote_patterns->add_pattern_directory_to_pattern_list( [
+			[
+				'name' => 'existingItem',
+				'title' => 'existingItemTitle',
+				'description' => 'Description'
+			]
+		] );
+
+		$this->assertIsArray( $block_patterns );
+		$this->assertEquals( count( $block_patterns ) , 2 );
+		$this->assertEquals( $block_patterns[0]['name'], 'existingItem' ); // make sure exising array is not overwritten
+		$this->assertEquals( $block_patterns[1]['name'], 'block_pattern_directory' ); // make sure new item is added to array
+	}
+	
 	public function testShouldLoadSettingsFromBlockPatternsManager() {
 
 		$mock = Mockery::mock(BlockPatternsManager::class);
