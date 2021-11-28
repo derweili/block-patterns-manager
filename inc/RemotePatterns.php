@@ -38,10 +38,12 @@ class RemotePatterns {
 
 	/**
 	 * Add the required hooks
+	 * 
+	 * Todo: add tests to make sure the hooks are added
 	 */
 	public function register() {
 		// add the filter to the block pattern directory
-		add_filter('should_load_remote_block_patterns', [ $this, 'disable_remote_block_patterns' ]);
+		add_filter('should_load_remote_block_patterns', [ $this, 'should_load_remote_block_patterns' ]);
 
 		/**
 		 * add the block pattern directory as a pattern to BlockPatternsManager patterns list
@@ -92,9 +94,16 @@ class RemotePatterns {
 
 	/**
 	 * Disable remote block pattern based on settings
+	 * 
+	 * @param bool $should_load_remote_block_patterns
+	 * @return bool
 	 */
-	public function disable_remote_block_patterns( $should_load_remote_block_patterns ) {
-		if( $this->get_setting() && ! $this->current_user_can( $this->get_setting() ) ) {
+	public function should_load_remote_block_patterns( $should_load_remote_block_patterns ) {
+
+		$required_capability = $this->get_setting();
+
+
+		if( $required_capability && ! $this->current_user_can( $this->get_setting() ) ) {
 			return false;
 		}
 		

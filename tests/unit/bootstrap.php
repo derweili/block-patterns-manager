@@ -1,12 +1,13 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Brain\Monkey;
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+
 // require __DIR__ . '/mocks/BlockPatternsManagerMock.php';
 
-class PluginDefaultTestCase extends TestCase {
+class PluginDefaultTestCase extends \Codeception\Test\Unit {
 	// Adds Mockery expectations to the PHPUnit assertions count.
 	use MockeryPHPUnitIntegration;
 

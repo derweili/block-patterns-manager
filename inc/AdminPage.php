@@ -46,6 +46,9 @@ class AdminPage {
 		return self::$menu_slug;
 	}
 
+	/**
+	 * Todo add test to check if actions and filters are registerd
+	 */
 	public function register() {
 		add_action( 'admin_menu', array($this, 'add_menu_page') );
 		add_filter( 'set-screen-option', [ __CLASS__, 'set_screen' ], 10, 3 );
@@ -57,6 +60,8 @@ class AdminPage {
 
 	/**
 	 * Register the menu page.
+	 * 
+	 * Todo: add test to check if menu page is registerd
 	 */
 	public function add_menu_page() {
 		$hook = add_management_page(
@@ -98,7 +103,7 @@ class AdminPage {
 					<div id="post-body" class="metabox-holder columns-2">
 						<div id="post-body-content">
 							<div class="meta-box-sortables ui-sortable">
-								<form method="post">
+								<form method="post" id="block-patterns-manager-admin-page-form">
 									
 									<?php
 										$this->block_patterns_list_table->prepare_items();
@@ -148,21 +153,29 @@ class AdminPage {
 
 	/**
 	 * Save admin page settings
+	 * 
+	 * Todo: add test to check if admin_notices are added
 	 */
 	public function save_settings() {
-		if ( isset( $_POST['_wpnonce'] ) && wp_verify_nonce( $_POST['_wpnonce'], $this->nonce_action ) ) {
 
-			$block_patterns_capabilities = [];
+		/**
+		 * If nonce is not valid, return false
+		 */
+		if ( ! isset( $_POST['_wpnonce'] ) || ! wp_verify_nonce( $_POST['_wpnonce'], $this->nonce_action ) ) return false;
 
-			// sanitize input
-			foreach ($_POST['capabilities'] as $key => $value) {
-				$block_patterns_capabilities[ sanitize_text_field( $key ) ] = sanitize_text_field( $value );
-			}
 
-			$this->block_patterns_manager->save_settings( $block_patterns_capabilities );
+		$block_patterns_capabilities = [];
 
-			add_action( 'admin_notices', [$this, 'save_settings_notice'] );
+		// sanitize input
+		foreach ($_POST['capabilities'] as $key => $value) {
+			$block_patterns_capabilities[ sanitize_text_field( $key ) ] = sanitize_text_field( $value );
 		}
+
+		$this->block_patterns_manager->save_settings( $block_patterns_capabilities );
+
+		add_action( 'admin_notices', [$this, 'save_settings_notice'] );
+
+		return true;
 	}
 
 	/**
@@ -170,7 +183,7 @@ class AdminPage {
 	 */
 	public function save_settings_notice() {
 		?>
-    <div class="notice notice-success is-dismissible">
+    <div class="notice notice-success is-dismissible block-patterns-manager-settings-saved">
         <p><?php _e( 'Settings saved', 'block-patterns-manager' ); ?></p>
     </div>
     <?php

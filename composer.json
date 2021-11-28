@@ -14,8 +14,22 @@
         }
     },
     "require-dev": {
-        "mockery/mockery": "^1.4",
         "phpunit/phpunit": "^9",
-        "brain/monkey": "^2.6"
+        "lucatume/wp-browser": "^3.0",
+        "codeception/module-asserts": "^1.0",                                      
+        "codeception/module-phpbrowser": "^1.0",                                   
+        "codeception/module-webdriver": "^1.0",                                    
+        "codeception/module-db": "^1.0",                                           
+        "codeception/module-filesystem": "^1.0",                                   
+        "codeception/module-cli": "^1.0",                                          
+        "codeception/util-universalframework": "^1.0",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.4"           
+    },
+    "scripts": {
+        "test:unit" : "vendor/bin/codecept run unit",
+        "test:wpunit" : "vendor/bin/codecept run wpunit",
+        "test:functional" : "vendor/bin/codecept run functional",
+        "test:acceptance" : "vendor/bin/codecept run acceptance"
     }
 }

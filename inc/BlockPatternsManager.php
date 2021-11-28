@@ -39,12 +39,13 @@ class BlockPatternsManager {
 	 * Loads all currently registered patterns and adds them to the registry.
 	 * Register our settings to the WP settings API.
 	 * Load the unregistered patterns method which disables block patterns if the user is not allowed to use them.
+	 * 
+	 * Todo: add tests to check if all those functions are registered correctly
 	 */
 	public function register() {
 		add_action( 'admin_init', array($this, 'load_all_patterns'), 50);
-		add_filter( 'admin_init', [ $this, 'register_settings' ] );
-		add_filter( 'admin_init', [ $this, 'unregister_block_patterns' ], 500 );
-
+		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_init', [ $this, 'unregister_block_patterns' ], 500 );
 	}
 
 	/**
@@ -103,12 +104,14 @@ class BlockPatternsManager {
 	 * Unregister Block Patterns based on capabilities
 	 */
 	public function unregister_block_patterns() {
-		foreach ($this->get_settings() as $pattern_name => $capability) {
+		$settings = $this->get_settings();
+
+		foreach ($settings as $pattern_name => $capability) {
 			// only unregister if the pattern is registered
 			if( $this->is_pattern_registered( $pattern_name ) ) {
 
 				// unregister if a capability is selected (not empty) and user has not the capability
-				if( ! empty( $capability ) && ! $this->current_user_can( $capability ) ) {
+				if(  $capability && ! empty( $capability ) && ! $this->current_user_can( $capability ) ) {
 					$unregister_result = $this->unregister_block_pattern( $pattern_name );
 				}
 			}
