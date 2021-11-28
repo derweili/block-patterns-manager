@@ -241,8 +241,8 @@ class BlockPatternsListTable extends WP_List_Table {
 	}
 
 	/**
-	* Handles data query and filter, sorting, and pagination.
-	*/
+	 * Handles data query and filter, sorting, and pagination.
+	 */
 	public function prepare_items() {
 
 		$block_patterns = $this->block_patterns_manager->get_all_patterns();
@@ -336,7 +336,6 @@ class BlockPatternsListTable extends WP_List_Table {
 					selectInput.addEventListener('change', function(e) {
 						syncCapabilitySelect( e.target.value );
 					});
-					// console.log(el)
 					syncCapabilitySelect( selectInput.value );
 				});
 
