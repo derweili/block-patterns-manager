@@ -62,9 +62,7 @@ class AdminPageTest extends Codeception\TestCase\WPTestCase {
 		$this->assertFalse( $has_saved_settings );
 	}
 
-	public function testShouldNotSaveSettingsIfNonceNotPresent() {
-		// create nonce
-		
+	public function testShouldNotSaveSettingsIfNonceNotPresent() {		
 		$_POST['capabilities'] = [
 			'twentytwentyone/large-text' => 'manage_options',
 		];
