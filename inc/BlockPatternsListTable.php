@@ -192,6 +192,9 @@ class BlockPatternsListTable extends WP_List_Table {
 	public function capabilities_dropdown( $item ) {
 		ob_start();
 		$capability_settings = $this->block_patterns_manager->get_settings();
+
+		$item_capability = isset( $capability_settings[ $item[ 'name' ] ] ) && $capability_settings[$item['name']] ? $capability_settings[$item['name']] : '';
+
 		?>
 			<div class="block-pattern-capability">
 				<select name="capabilities[<?= $item['name']; ?>]-select" id="" class="capabilities-select">
@@ -200,15 +203,15 @@ class BlockPatternsListTable extends WP_List_Table {
 					<?php foreach ( $this->get_default_capability_groups() as $capability_group ) : ?>
 						<optgroup label="<?= $capability_group['label']; ?>">
 							<?php foreach ( $capability_group['capabilities'] as $capability ) : ?>
-								<option value="<?= $capability; ?>" <?= $capability_settings[$item['name']] === $capability ? 'selected' : ''; ?>><?= $capability; ?></option>
+								<option value="<?= $capability; ?>" <?= $item_capability === $capability ? 'selected' : ''; ?>><?= $capability; ?></option>
 							<?php endforeach; ?>
 						</optgroup>
 					<?php endforeach; ?>
 
-					<option value="disable_for_all_users" <?= $capability_settings[$item['name']] === 'disable_for_all_users' ? 'selected' : ''; ?>><?php _e( 'Disable for all users', 'block-patterns-manager' ); ?> </option>
-					<option value="custom" <?= $this->is_custom_capability($capability_settings[$item['name']]) ? 'selected' : ''; ?>><?php _e( 'Select Custom Capability', 'block-patterns-manager' ); ?> </option>
+					<option value="disable_for_all_users" <?= $item_capability === 'disable_for_all_users' ? 'selected' : ''; ?>><?php _e( 'Disable for all users', 'block-patterns-manager' ); ?> </option>
+					<option value="custom" <?= $this->is_custom_capability( $item_capability ) ? 'selected' : ''; ?>><?php _e( 'Select Custom Capability', 'block-patterns-manager' ); ?> </option>
 				</select>
-				<input type="hidden" value="<?= $capability_settings[$item['name']]; ?>" name="capabilities[<?= $item['name']; ?>]" placeholder="<?= __('Custom capability name', 'block-patterns-manager'); ?>">
+				<input type="hidden" value="<?= $item_capability ?>" name="capabilities[<?= $item['name']; ?>]" placeholder="<?= __('Custom capability name', 'block-patterns-manager'); ?>">
 			</div>
 
 		<?php
@@ -248,7 +251,7 @@ class BlockPatternsListTable extends WP_List_Table {
 		$block_patterns = $this->block_patterns_manager->get_all_patterns();
 
 		$this->_column_headers = $this->get_column_info();
-		
+
 		/** Process bulk action */
 		$this->process_bulk_action();
 		
@@ -260,7 +263,6 @@ class BlockPatternsListTable extends WP_List_Table {
 			'total_items' => $total_items, //WE have to calculate the total number of items
 			'per_page' => $total_items //WE have to determine how many items to show on a page
 		] );
-
 
 		/**
 		 * Sort items optionally based on GET Parameters
