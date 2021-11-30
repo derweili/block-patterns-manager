@@ -55,8 +55,3 @@ function _get_plugin_url() {
 }
 
 ( new Plugin() )->run();
-
-add_action( 'after_setup_theme', __NAMESPACE__ . '\mm_remove_patterns' );
-function mm_remove_patterns() {
-  //  remove_theme_support( 'core-block-patterns' );
-}
